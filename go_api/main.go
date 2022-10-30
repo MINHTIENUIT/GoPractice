@@ -1,29 +1,42 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
-	"example.com/model"	
+	"example.com/model"
+	"example.com/controller"
+	"github.com/gin-gonic/gin"
 )
 
 var Articles []model.Article
 
-func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w,"welcome to the HomePage!")
-	fmt.Println("Endpoint Hit: homePage")	
+func config() *gin.Engine {
+	r := gin.Default()
+	return r
 }
 
-func returnAllArticles(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: returnAllArticles")
-	json.NewEncoder(w).Encode(Articles)
-}
+func handleRequest(r *gin.Engine) {
+	//Simple API:
+	apiv1 := r.Group("/v1") 
+	{
+		//Article Controller
+		a := controller.NewArticleCtl()				
+		articlesCtl := apiv1.Group(a.Router) 
+		{
+			articlesCtl.GET("/", a.GetAll)
+			articlesCtl.GET("/:id", a.GetById)
+			articlesCtl.POST("/:id", a.Create)
+			articlesCtl.PUT("/:id", a.Update)
+			articlesCtl.PATCH("/:id", a.Update)
+			articlesCtl.DELETE("/:id", a.Delete)
+		}
 
-func handleRequest() {
-	http.HandleFunc("/", homePage)
-	http.HandleFunc("/articles", returnAllArticles)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+		//Customer Controller
+		c := controller.NewCustomerCtl()
+		customerCtl := apiv1.Group(c.Router)
+		{
+			customerCtl.GET("/", c.GetAll)
+			customerCtl.GET("/:id", c.GetById)
+		}
+	}
 }
 
 func main() {
@@ -31,5 +44,7 @@ func main() {
 		model.Article{Title: "Hello", Desc: "Article Description", Content: "Article Content"},
         model.Article{Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
 	}
-	handleRequest()
+	r := config();	
+	handleRequest(r);
+	r.Run(":8080")
 }
