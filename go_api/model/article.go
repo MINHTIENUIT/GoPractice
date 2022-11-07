@@ -2,11 +2,12 @@ package model
 
 import (
 	// "encoding/json"
-	// "fmt"
+	"gorm.io/gorm"
 )
 
 type Article struct {
-	Title string `json:"Title"`
-	Desc string `json:"Desc"`
-	Content string `json:"Content"`	
-} 
+	gorm.Model
+	Title   string `json:"Title"`
+	Desc    string `json:"Desc"`
+	Content string `json:"Content"`
+}
